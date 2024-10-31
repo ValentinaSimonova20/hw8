@@ -24,6 +24,25 @@ class HomeWorkTest {
                 "DEL 5000\n" +
                 "SALE 3000 3\n" +
                 "SALE 0.01 3")), 0.009);
+
+        assertEquals(0.08, homeWork.getProfit(parseLines("BID 0.01\n" +
+                "BID 10000\n" +
+                "BID 5000\n" +
+                "BID 5000\n" +
+                "SALE 5000 3\n" +
+                "DEL 5000\n" +
+                "SALE 3000 3\n" +
+                "SALE 0.01 3")), 0.009);
+
+        assertEquals(0.00, homeWork.getProfit(parseLines(
+                "BID 0.01\n" +
+                        "SALE 0.02 10")), 0.009);
+
+        assertEquals(0.01, homeWork.getProfit(parseLines(
+                "BID 100\n" +
+                        "SALE 100 2\n" +
+                        "BID 100\n"
+        )), 0.009);
     }
 
     @Test

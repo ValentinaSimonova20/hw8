@@ -11,7 +11,28 @@ public class HomeWork {
      * <a href="https://acm.timus.ru/problem.aspx?space=1&num=1316">https://acm.timus.ru/problem.aspx?space=1&num=1316</a>
      */
     public Double getProfit(List<String> actionList) {
-        return null;
+        Treap treap = new Treap();
+        Double result = 0.0;
+        int currentCustomerIndex = 0;
+        for (String action : actionList) {
+            String[] actionArray = action.split(" ");
+            switch (actionArray[0]) {
+                case "BID": {
+                    treap.add(currentCustomerIndex, Double.valueOf(actionArray[1]));
+                    currentCustomerIndex++;
+                    break;
+                }
+                case "DEL": {
+                    treap.remove(treap.getKeyByPrice(Double.valueOf(actionArray[1])));
+                    break;
+                } case "SALE": {
+                    result += treap.getProfit(Integer.parseInt(actionArray[2]), Double.valueOf(actionArray[1]));
+                    break;
+                }
+            }
+
+        }
+        return result;
     }
 
     /**
