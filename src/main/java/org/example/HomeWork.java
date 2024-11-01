@@ -18,12 +18,12 @@ public class HomeWork {
             String[] actionArray = action.split(" ");
             switch (actionArray[0]) {
                 case "BID": {
-                    treap.add(currentCustomerIndex, Double.valueOf(actionArray[1]));
+                    treap.add(Double.valueOf(actionArray[1]), currentCustomerIndex);
                     currentCustomerIndex++;
                     break;
                 }
                 case "DEL": {
-                    treap.remove(treap.getKeyByPrice(Double.valueOf(actionArray[1])));
+                    treap.remove(Double.valueOf(actionArray[1]));
                     break;
                 } case "SALE": {
                     result += treap.getProfit(Integer.parseInt(actionArray[2]), Double.valueOf(actionArray[1]));

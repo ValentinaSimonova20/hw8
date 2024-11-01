@@ -2,6 +2,7 @@ package org.example;
 
 import lombok.Getter;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -25,37 +26,17 @@ public class Treap {
     public Treap() {
     }
 
-    public Double getProfit(int amount, Double price) {
-        List<Double> result = new ArrayList<>();
-        calculateProfit(root, amount, price,result);
-        currentAmount = 0;
-        return result.stream().mapToDouble(i -> i).sum();
+
+    public void add(Double key, Integer index) {
+        root = insert(root, key, index);
     }
 
 
-    static Integer currentAmount = 0;
-    private void calculateProfit(Node cur, Integer amount, Double price, List<Double> result) {
-        if (cur == null || currentAmount >= amount) {
-            return;
-        }
-        calculateProfit(cur.left, amount, price, result);
-        if(cur.price >= price && currentAmount < amount) {
-            result.add(0.01);
-            currentAmount++;
-        }
-        calculateProfit(cur.right, amount, price, result);
-    }
-
-    public void add(Integer key, Double prices) {
-        root = insert(root, key, prices);
-    }
-
-
-    public void remove(Integer key) {
+    public void remove(Double key) {
         root = deleteNode(root, key);
     }
 
-    private Node deleteNode(Node cur, Integer key) {
+    private Node deleteNode(Node cur, Double key) {
         if (cur == null)
             return cur;
 
@@ -89,28 +70,7 @@ public class Treap {
     }
 
 
-    public Integer getKeyByPrice(Double price) {
-        int[] result = new int[1];
-        calculateIndexNumber(root, price, result);
-        return result[0];
-    }
-
-
-    private void calculateIndexNumber(Node cur, Double price, int[] result) {
-        if (cur == null) {
-            return;
-        }
-        calculateIndexNumber(cur.left, price, result);
-        if(cur.price.equals(price)) {
-            result[0] = cur.key;
-            return;
-        }
-        calculateIndexNumber(cur.right, price, result);
-    }
-
-
-
-    private Node searchNode(Node cur, Integer key) {
+    private Node searchNode(Node cur, Double key) {
         if (cur == null || key.compareTo(cur.key) == 0) {
             return cur;
         }
@@ -121,18 +81,18 @@ public class Treap {
     }
 
 
-    private Node insert(Node cur, Integer key, Double price) {
+    private Node insert(Node cur, Double key, Integer index) {
         if (cur == null) {
-            return new Node(key, price);
+            return new Node(key, index);
         }
         if (key.compareTo(cur.key) > 0) {
-            cur.right = insert(cur.right, key, price);
+            cur.right = insert(cur.right, key, index);
             if (cur.right.priority < cur.priority) {
                 cur = leftRotation(cur);
             }
 
         } else {
-            cur.left = insert(cur.left, key, price);
+            cur.left = insert(cur.left, key, index);
             if (cur.left.priority < cur.priority) {
                 cur = rightRotation(cur);
             }
@@ -169,35 +129,88 @@ public class Treap {
         return x;
     }
 
+    private Node[] split(Double key) {
+        return root.split(key);
+    }
+
+    public Double getProfit(Integer amount, Double price) {
+        Node[] node = split(price);
+        Node suitableCustomers = node[1];
+        int size = inorder(suitableCustomers).size();
+        return Math.min(size * 0.01, amount * 0.01);
+    }
+
+    public List<Node> inorder(Node cur) {
+        List<Node> res = new ArrayList<>();
+        inorder(cur, res);
+        return res;
+    }
+
+
+    private void inorder(Node cur, List<Node> res) {
+        if (cur == null) {
+            return;
+        }
+        inorder(cur.left, res);
+        res.add(cur);
+        inorder(cur.right, res);
+    }
+
+
 
     @Getter
     public static class Node {
         static Random RND = new Random();
-        Integer key;
+        Double key;
         int priority;
-        Double price;
         Node left;
         Node right;
 
-        public Node(Integer key, Double price) {
-            this(key, RND.nextInt(10), price);
+        public Node(Double key) {
+            this(key, RND.nextInt(10));
         }
 
-        public Node(Integer key, int priority, Double price) {
-            this(key, priority, null, null, price);
+        public Node(Double key, int priority) {
+            this(key, priority, null, null);
         }
 
-        public Node(Integer key, int priority, Node left, Node right, Double price) {
+        public Node(Double key, int priority, Node left, Node right) {
             this.key = key;
             this.priority = priority;
             this.left = left;
             this.right = right;
-            this.price = price;
         }
 
         @Override
         public String toString() {
-            return String.format("(%d,%d,%f)", key, priority, price);
+            return String.format("(%f,%d,%d)", key, priority);
+        }
+
+        public Node[] split(Double key) {
+            Node tmp = null;
+
+            Node[] res = (Node[]) Array.newInstance(this.getClass(), 2);
+
+            if (this.key.compareTo(key) < 0) {
+                if (this.right == null) {
+                    res[1] = null;
+                } else {
+                    Node[] rightSplit = this.right.split(key);
+                    res[1] = rightSplit[1];
+                    tmp = rightSplit[0];
+                }
+                res[0] = new Node(this.key, priority, this.left, tmp);
+            } else {
+                if (left == null) {
+                    res[0] = null;
+                } else {
+                    Node[] leftSplit = this.left.split(key);
+                    res[0] = leftSplit[0];
+                    tmp = leftSplit[1];
+                }
+                res[1] = new Node(this.key, priority, tmp, this.right);
+            }
+            return res;
         }
     }
 }
