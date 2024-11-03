@@ -53,6 +53,21 @@ class HomeWorkTest {
                 "? 2\n" +
                 "+ 1\n" +
                 "? 4")));
+
+        assertEquals(asList(2, -1, 1), homeWork.getLeaveOrder(parseLines("+ 1\n" +
+                "+ 3\n" +
+                "+ 3\n" +
+                "+ 2\n" +
+                "? 2\n" +
+                "+ 1\n" +
+                "? 4\n" +
+                "? 0")));
+
+        assertEquals(
+                List.of(1),
+                homeWork.getLeaveOrder(parseLines("+ 1\n" +
+                "? 1"))
+        );
     }
 
     private static List<String> parseLines(String str) {

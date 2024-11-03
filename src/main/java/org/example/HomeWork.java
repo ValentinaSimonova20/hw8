@@ -52,7 +52,7 @@ public class HomeWork {
                    break;
                 }
                 case "?": {
-                    y = treap.next(Integer.parseInt(actionArray[1]));
+                    y = treap.next(Integer.parseInt(actionArray[1]), -1);
                     result.add(y);
                     break;
                 }

@@ -130,9 +130,10 @@ public class Treap<T extends Comparable<T>> {
         return x;
     }
 
-    public T next(T key) {
+    public T next(T key, T defaultIfNull) {
         Node<T> moreKeys = split(key)[1];
-        return getMinValue(moreKeys).key;
+        Node<T> minValue = getMinValue(moreKeys);
+        return minValue == null ? defaultIfNull : minValue.key;
     }
 
     private Node<T> getMinValue(Node<T> node) {
