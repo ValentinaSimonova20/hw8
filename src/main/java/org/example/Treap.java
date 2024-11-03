@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -19,24 +20,24 @@ import java.util.Random;
  * <a href="https://www.kernel.org/doc/mirror/ols2005v2.pdf">https://www.kernel.org/doc/mirror/ols2005v2.pdf</a>
  *
  */
-public class Treap {
+public class Treap<T extends Comparable<T>> {
 
-    Node root;
+    Node<T> root;
 
     public Treap() {
     }
 
 
-    public void add(Double key, Integer index) {
-        root = insert(root, key, index);
+    public void add(T key) {
+        root = insert(root, key);
     }
 
 
-    public void remove(Double key) {
+    public void remove(T key) {
         root = deleteNode(root, key);
     }
 
-    private Node deleteNode(Node cur, Double key) {
+    private Node<T> deleteNode(Node<T> cur, T key) {
         if (cur == null)
             return cur;
 
@@ -49,12 +50,12 @@ public class Treap {
 
             // If left is NULL
         else if (cur.left == null) {
-            Node temp = cur.right;
+            Node<T> temp = cur.right;
             cur = temp;  // Make right child as root
         }
         // If Right is NULL
         else if (cur.right == null) {
-            Node temp = cur.left;
+            Node<T> temp = cur.left;
             cur = temp;  // Make left child as root
         }
         // If key is at root and both left and right are not NULL
@@ -70,7 +71,7 @@ public class Treap {
     }
 
 
-    private Node searchNode(Node cur, Double key) {
+    private Node<T> searchNode(Node<T> cur, T key) {
         if (cur == null || key.compareTo(cur.key) == 0) {
             return cur;
         }
@@ -81,18 +82,18 @@ public class Treap {
     }
 
 
-    private Node insert(Node cur, Double key, Integer index) {
+    private Node<T> insert(Node<T> cur, T key) {
         if (cur == null) {
-            return new Node(key, index);
+            return new Node<>(key);
         }
         if (key.compareTo(cur.key) > 0) {
-            cur.right = insert(cur.right, key, index);
+            cur.right = insert(cur.right, key);
             if (cur.right.priority < cur.priority) {
                 cur = leftRotation(cur);
             }
 
         } else {
-            cur.left = insert(cur.left, key, index);
+            cur.left = insert(cur.left, key);
             if (cur.left.priority < cur.priority) {
                 cur = rightRotation(cur);
             }
@@ -109,9 +110,9 @@ public class Treap {
              / \       < - - - - - - -            / \
             T1  T2     Left Rotation            T2  T3 */
 
-    private Node leftRotation(Node x) {
-        Node y = x.right;
-        Node T2 = y.left;
+    private Node<T> leftRotation(Node<T> x) {
+        Node<T> y = x.right;
+        Node<T> T2 = y.left;
 
         y.left = x;
         x.right = T2;
@@ -119,9 +120,9 @@ public class Treap {
         return y;
     }
 
-    private Node rightRotation(Node y) {
-        Node x = y.left;
-        Node T2 = x.right;
+    private Node<T> rightRotation(Node<T> y) {
+        Node<T> x = y.left;
+        Node<T> T2 = x.right;
 
         x.right = y;
         y.left = T2;
@@ -129,25 +130,37 @@ public class Treap {
         return x;
     }
 
-    private Node[] split(Double key) {
+    public T next(T key) {
+        Node<T> moreKeys = split(key)[1];
+        return getMinValue(moreKeys).key;
+    }
+
+    private Node<T> getMinValue(Node<T> node) {
+        while (node != null && node.left != null) {
+            node = node.left;
+        }
+        return node;
+    }
+
+    private Node<T>[] split(T key) {
         return root.split(key);
     }
 
-    public Double getProfit(Integer amount, Double price) {
-        Node[] node = split(price);
-        Node suitableCustomers = node[1];
+    public Double getProfit(Integer amount, T price) {
+        Node<T>[] node = split(price);
+        Node<T> suitableCustomers = node[1];
         int size = inorder(suitableCustomers).size();
         return Math.min(size * 0.01, amount * 0.01);
     }
 
-    public List<Node> inorder(Node cur) {
-        List<Node> res = new ArrayList<>();
+    public List<Node<T>> inorder(Node<T> cur) {
+        List<Node<T>> res = new ArrayList<>();
         inorder(cur, res);
         return res;
     }
 
 
-    private void inorder(Node cur, List<Node> res) {
+    private void inorder(Node<T> cur, List<Node<T>> res) {
         if (cur == null) {
             return;
         }
@@ -159,22 +172,22 @@ public class Treap {
 
 
     @Getter
-    public static class Node {
+    public static class Node<T extends Comparable<T>> {
         static Random RND = new Random();
-        Double key;
+        T key;
         int priority;
-        Node left;
-        Node right;
+        Node<T> left;
+        Node<T> right;
 
-        public Node(Double key) {
+        public Node(T key) {
             this(key, RND.nextInt(10));
         }
 
-        public Node(Double key, int priority) {
+        public Node(T key, int priority) {
             this(key, priority, null, null);
         }
 
-        public Node(Double key, int priority, Node left, Node right) {
+        public Node(T key, int priority, Node<T> left, Node<T> right) {
             this.key = key;
             this.priority = priority;
             this.left = left;
@@ -186,29 +199,29 @@ public class Treap {
             return String.format("(%f,%d,%d)", key, priority);
         }
 
-        public Node[] split(Double key) {
-            Node tmp = null;
+        public Node<T>[] split(T key) {
+            Node<T> tmp = null;
 
-            Node[] res = (Node[]) Array.newInstance(this.getClass(), 2);
+            Node<T>[] res = (Node<T>[]) Array.newInstance(this.getClass(), 2);
 
             if (this.key.compareTo(key) < 0) {
                 if (this.right == null) {
                     res[1] = null;
                 } else {
-                    Node[] rightSplit = this.right.split(key);
+                    Node<T>[] rightSplit = this.right.split(key);
                     res[1] = rightSplit[1];
                     tmp = rightSplit[0];
                 }
-                res[0] = new Node(this.key, priority, this.left, tmp);
+                res[0] = new Node<>(this.key, priority, this.left, tmp);
             } else {
                 if (left == null) {
                     res[0] = null;
                 } else {
-                    Node[] leftSplit = this.left.split(key);
+                    Node<T>[] leftSplit = this.left.split(key);
                     res[0] = leftSplit[0];
                     tmp = leftSplit[1];
                 }
-                res[1] = new Node(this.key, priority, tmp, this.right);
+                res[1] = new Node<>(this.key, priority, tmp, this.right);
             }
             return res;
         }
